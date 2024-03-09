@@ -58,7 +58,13 @@ function App() {
     setUserPlaces((prevPickedPlaces) =>
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current.id)
     );
-await addPlace(userPlaces.filter((place) => place.id !== selectedPlace.current.id));
+
+    try {
+      await addPlace(userPlaces.filter((place) => place.id !== selectedPlace.current.id));
+    } catch (error) {
+      console.log(error);
+    }
+
     setModalIsOpen(false);
   }, [userPlaces]);
 
