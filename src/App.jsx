@@ -1,17 +1,29 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 import Places from './components/Places.jsx';
 import Modal from './components/Modal.jsx';
 import DeleteConfirmation from './components/DeleteConfirmation.jsx';
 import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
-
+import { addPlace,getUserPlaces } from './http.js';
 function App() {
+
   const selectedPlace = useRef();
-
+  
   const [userPlaces, setUserPlaces] = useState([]);
-
+  
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  useEffect(() => {
+    const fetchUserPlaces = async () => {
+      try {
+        const data = await getUserPlaces();
+        setUserPlaces(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchUserPlaces();
+  }, []);
 
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
@@ -22,7 +34,7 @@ function App() {
     setModalIsOpen(false);
   }
 
-  function handleSelectPlace(selectedPlace) {
+  async function handleSelectPlace(selectedPlace) {
     setUserPlaces((prevPickedPlaces) => {
       if (!prevPickedPlaces) {
         prevPickedPlaces = [];
@@ -32,15 +44,23 @@ function App() {
       }
       return [selectedPlace, ...prevPickedPlaces];
     });
+    try {
+      await addPlace([selectedPlace, ...userPlaces]);
+      
+    } catch (error) {
+      console.log(error);
+      setUserPlaces(userPlaces);
+    }
   }
+  
 
   const handleRemovePlace = useCallback(async function handleRemovePlace() {
     setUserPlaces((prevPickedPlaces) =>
       prevPickedPlaces.filter((place) => place.id !== selectedPlace.current.id)
     );
-
+await addPlace(userPlaces.filter((place) => place.id !== selectedPlace.current.id));
     setModalIsOpen(false);
-  }, []);
+  }, [userPlaces]);
 
   return (
     <>
